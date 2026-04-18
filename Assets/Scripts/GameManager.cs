@@ -1,57 +1,89 @@
-using System;
 using UnityEngine;
 using Sirenix.OdinInspector;
-using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
-    public List<string> Inputs = new List<string>(); 
+    public Transform player;
 
-
-    private DoubleLinkedList<string> Nombres = new();
-    private CircularDoubleLinkedList<string> Dialogos = new() ;
+    private DoubleLinkedList<GameState> timeline = new();
 
     void Start()
     {
-      foreach (var input in Inputs)
-      {
-         Nombres.Add(input);
-         Dialogos.Add(input);
-      }
+        SaveTurn();
     }
-    void Update()
+    public void MoveForward()
     {
+        Move(Vector3.forward);
+    }
 
-    }
-    [Button]
-    public void ShowDoubleList()
+    public void MoveBack()
     {
-        //Nombres.TraverseInOrder(value => Debug.Log(value.Value) );
+        Move(Vector3.back);
+    }
 
-        Nombres.TraverseInReverse(value => Debug.Log(value.Value));
-    }
-    [Button]
-    public void RemoveFirst()
+    public void MoveLeft()
     {
-        Dialogos.RemoveFirst();  
+        Move(Vector3.left);
     }
-    [Button]
-    public void RemoveLast()
+
+    public void MoveRight()
     {
-        Dialogos.RemoveLast();
+        Move(Vector3.right);
     }
-    [Button]
-    public void AddCustom(string value)
+
+    void Move(Vector3 dir)
     {
-        Dialogos.Add(value);
+        player.position += dir;
+
+        SaveTurn();
     }
 
     [Button]
-    public void GetCount()
+    public void NextTurn()
     {
-        Debug.Log(Dialogos.Count);
+        timeline.MoveNext();
+        ApplyState();
     }
 
+    [Button]
+    public void PrevTurn()
+    {
+        timeline.MovePrev();
+        ApplyState();
+    }
 
+    [Button]
+    public void ReturnToLast()
+    {
+        while (timeline.pivot != timeline.tail)
+        {
+            timeline.MoveNext();
+        }
 
+        ApplyState();
+    }
+
+    public void SaveTurn()
+    {
+        GameState state = new GameState
+        {
+            playerPosition = player.position,
+            playerHP = 100,
+            playerAttack = 10
+        };
+
+        timeline.AddTurn(state.Clone());
+
+        Debug.Log("Turno guardado = Total: " + timeline.Count);
+    }
+    void ApplyState()
+    {
+        if (timeline.pivot == null) return;
+
+        GameState state = timeline.pivot.Value;
+
+        player.position = state.playerPosition;
+
+        Debug.Log("Reproduciendo turno = " + state.playerPosition);
+    }
 }

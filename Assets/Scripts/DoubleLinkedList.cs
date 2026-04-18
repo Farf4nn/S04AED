@@ -1,105 +1,85 @@
 using System;
 using UnityEngine;
 
-public class DoubleLinkedList<T> //: MonoBehaviour
+public class DoubleLinkedList<T>
 {
     public Node<T> head = null;
     public Node<T> tail = null;
+    public Node<T> pivot = null;
     public int Count;
 
-    //->O(1)
+    // O(1)
     public virtual void Add(T value)
     {
         Node<T> newNode = new(value);
 
-        //-> Cuando no hay nuingun elemento en la lista
         if (head == null)
         {
             head = newNode;
             tail = newNode;
+            pivot = newNode;
         }
-        else if(head != null )
+        else
         {
             tail.SetNext(newNode);
             newNode.SetPrev(tail);
             tail = newNode;
+
+            pivot = newNode;
         }
+
         Count++;
     }
-
-    
-    //->O(1)
-    public void RemoveLast()
+    public void AddTurn(T value)
     {
-
-        //Node<T> Evaluator = head;
-
-        if (Count == 0)
+        if (pivot != tail)
         {
-            Debug.Log("La lista esta vacia");
-            return;
+            RemoveAfterPivot();
         }
-        else if (Count == 1)
-        {
-            head = null;
-            tail = null;
-            Count--;
-        }
-        else if (Count >= 2)
-        {
-            Node<T> Evaluator = tail.Prev;
-            tail.SetPrev(null);
-            Evaluator.SetNext(null);
-            tail = Evaluator;
 
-
-            Count--;
-        }
-       
-
+        Add(value);
     }
-    //-> O(1)
-    public void RemoveFirst()
+    public void RemoveAfterPivot()
     {
+        if (pivot == null) return;
 
-        if (Count <= 1)
+        Node<T> current = pivot.Next;
+
+        while (current != null)
         {
-            head = null;
-            tail = null;
+            Node<T> temp = current;
+            current = current.Next;
+
+            temp.SetNext(null);
+            temp.SetPrev(null);
+
             Count--;
-            return;
         }
 
-        Node<T> Evaluator = head.Next;
-        head.SetNext(null);
-        head = Evaluator;
-        Count--;
-
-
+        pivot.SetNext(null);
+        tail = pivot;
     }
-
+    public void MoveNext()
+    {
+        if (pivot != null && pivot.Next != null)
+        {
+            pivot = pivot.Next;
+        }
+    }
+    public void MovePrev()
+    {
+        if (pivot != null && pivot.Prev != null)
+        {
+            pivot = pivot.Prev;
+        }
+    }
     public void TraverseInOrder(Action<Node<T>> action)
     {
-        Node<T> Evaluator = head;
-        while (Evaluator != null)
+        Node<T> evaluator = head;
+        while (evaluator != null)
         {
-            //  Debug.Log(Evaluator.Value);
-            action(Evaluator);
-
-            Evaluator = Evaluator.Next;
+            action(evaluator);
+            evaluator = evaluator.Next;
         }
     }
-    public void TraverseInReverse(Action<Node<T>> action)
-    {
-        Node<T> Evaluator = tail;
-        while (Evaluator != null)
-        {
-            //  Debug.Log(Evaluator.Value);
-            action(Evaluator);
-
-            Evaluator = Evaluator.Prev;
-        }
-    }
-
-
 }
